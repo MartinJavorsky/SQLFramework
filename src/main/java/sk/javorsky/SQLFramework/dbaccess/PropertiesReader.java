@@ -1,6 +1,7 @@
 package sk.javorsky.SQLFramework.dbaccess;
 
 import java.io.InputStream;
+import java.util.Properties;
 
 public class PropertiesReader {
     public static final String DB_URL = "db.url";

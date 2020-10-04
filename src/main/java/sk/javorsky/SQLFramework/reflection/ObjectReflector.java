@@ -1,6 +1,7 @@
 package sk.javorsky.SQLFramework.reflection;
 
 import sk.javorsky.SQLFramework.anotacie.Id;
+import sk.javorsky.SQLFramework.anotacie.Size;
 import sk.javorsky.SQLFramework.anotacie.Stlpec;
 import sk.javorsky.SQLFramework.anotacie.Tabulka;
 import sk.javorsky.SQLFramework.vynimky.MissingIdException;
@@ -29,7 +30,7 @@ public class ObjectReflector {
             if(f.isAnnotationPresent(Stlpec.class)){
                 Stlpec stlpec = f.getAnnotation(Stlpec.class);
                 stlpce.add(stlpec.value());
-                System.out.println("Stlpec: "+stlpec.value());
+                //System.out.println("Stlpec: "+stlpec.value());
             }
         }
 
@@ -75,22 +76,51 @@ public class ObjectReflector {
         return object;
     }
 
-    public static Map<String, Object> getObjectData(Object object) throws Exception
+    public static List<String[]> getFields(Object object) throws Exception
     {   Class<?> clazz = object.getClass();
-        Map<String, Object> data = new HashMap<>();;
+        //Map<String, Object> data = new HashMap<>();
+        List<String[]> listFields= new ArrayList<>();
+
+        String size = "10";
+        for(Field f : clazz.getDeclaredFields())
+        {
+            String[] fields = new String[3];
+            f.setAccessible(true);
+            if(f.isAnnotationPresent(Stlpec.class))
+            {
+                if(f.isAnnotationPresent(Size.class)) {
+                    size = f.getAnnotation(Size.class).value();
+                }
+                String typElementu = f.getType().getName();
+                String nazovStlpca = f.getAnnotation(Stlpec.class).value();
+                fields[0] = nazovStlpca;
+                fields[1] = typElementu;
+                fields[2] = size;
+                //Object hodnota = f.get(object);
+                listFields.add(fields);
+
+            }
+        }
+        return listFields;
+    }
+
+    public static List<Object> getObjectData(Object object,List<Object> data) throws Exception
+    {   Class<?> clazz = object.getClass();
+        //Map<String, Object> data = new HashMap<>();;
+        //int i = 0;
         for(Field f : clazz.getDeclaredFields())
         {
             f.setAccessible(true);
             if(f.isAnnotationPresent(Stlpec.class))
             {
                 //String typElementu = f.getType().getName();
-                String nazovStlpca = f.getAnnotation(Stlpec.class).value();
-
-                Object hodnota = f.get(object);
-                data.put(nazovStlpca, hodnota);
+                //String nazovStlpca = f.getAnnotation(Stlpec.class).value();
+                data.add(f.get(object));
 
             }
         }
         return data;
     }
+
+
 }

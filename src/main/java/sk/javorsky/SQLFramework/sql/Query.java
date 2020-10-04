@@ -1,5 +1,7 @@
 package sk.javorsky.SQLFramework.sql;
 
+import java.util.List;
+
 public class Query
 {
     private StringBuilder query;
@@ -63,7 +65,7 @@ public class Query
     public Query set(String[] columns){
         int count = columns.length;
         if(count == 0)
-            throw new IllegalArgumentException("Neplatný počet parametrů");
+            throw new IllegalArgumentException("Neplatný počet parametrov");
 
         for(String column : columns){
             query.append(column);
@@ -90,19 +92,28 @@ public class Query
         return this;
     }
 
+    public Query create(String table)
+    {
+        query = new StringBuilder();
+        query.append("CREATE TABLE IF NOT EXISTS ");
+        query.append(table);
+        //query.append(table);
+        return this;
+    }
+
     /**
      *
      * @param params
      * @return
      */
-    public Query values(Object[] params)
+    public Query values(List<Object> params)
     {
         query.append(" VALUES(");
 
-        int count = params.length;
+        int count = params.size();
 
         if(count == 0)
-            throw new IllegalArgumentException("Neplatný počet parametrů");
+            throw new IllegalArgumentException("Neplatný počet parametrov");
 
         for (int i = 0; i<count; i++) {
             query.append("?,");
@@ -113,6 +124,32 @@ public class Query
         return this;
     }
 
+
+    public Query fields(List<String[]> fields)
+    {
+        query.append(" (");
+        String typ = "varchar";
+        int count = fields.size();
+
+        if(count == 0)
+            throw new IllegalArgumentException("Neplatný počet parametrov");
+
+        for(String[] field : fields)
+        {
+            if(field[1].equals(String.class.getName()))
+                typ = "VARCHAR";
+            if(field[1].equals(int.class.getName()) || field[1].equals(Integer.class.getName()) || field[1].equals(Long.class.getName()))
+                typ = "INT";
+            if(field[1].equals(float.class.getName()) || field[1].equals(double.class.getName()))
+                typ = "DECIMAL";
+
+            query.append(field[0] + " " + typ +"("+ field[2] + ") DEFAULT NULL,");
+        }
+        //odstraníme poslední čárku
+        query.deleteCharAt(query.lastIndexOf(","));
+        query.append(");");
+        return this;
+    }
     //proměnné třídy
     //metody třídy
     /**

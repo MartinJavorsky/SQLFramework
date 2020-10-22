@@ -1,7 +1,7 @@
 package sk.javorsky.SQLFramework.dbaccess;
 
+import sk.javorsky.CreateQuerys;
 import sk.javorsky.SQLFramework.reflection.ObjectReflector;
-import sk.javorsky.SQLFramework.sql.Query;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,18 +12,23 @@ public class Database {
 
     private Connection conn = null;
     private PropertiesReader propertiesReader = new PropertiesReader();
-    //připojení k databázi
-    //protected Connection connection;
+    private String tableName;
+     //instance třídy query
+    //protected Query query;
+    private CreateQuerys createQuerys;
 
-    //instance třídy query
-    protected Query query;
-
-    public Database() throws Exception {
-        String user = propertiesReader.getProperty(PropertiesReader.DB_USER);
-        String psw = propertiesReader.getProperty(PropertiesReader.DB_PSW);
-        String driver = propertiesReader.getProperty(PropertiesReader.DB_DRIVER);
-        String url = propertiesReader.getProperty(PropertiesReader.DB_URL);
+    public Database(String tableName,String fileProperties) throws Exception {
+        String user = propertiesReader.getProperty(PropertiesReader.DB_USER,fileProperties);
+        String psw = propertiesReader.getProperty(PropertiesReader.DB_PSW,fileProperties);
+        String driver = propertiesReader.getProperty(PropertiesReader.DB_DRIVER,fileProperties);
+        String url = propertiesReader.getProperty(PropertiesReader.DB_URL,fileProperties);
+        this.tableName = tableName;
         connect(user,psw, driver, url);
+        createQuerys = new CreateQuerys();
+    }
+
+    public CreateQuerys getCreateQuerys() {
+        return createQuerys;
     }
 
     private void connect(String usr, String pwd, String driver, String url) throws SQLException {
@@ -94,38 +99,27 @@ public class Database {
     }
 
     public int delete(String table, String requirement, List<Object> data) throws SQLException{
-        query = new Query();
-        query.delete(table)
-                .where(requirement);
-        return query(query.getQuery(), data);
+        return query(createQuerys.delete(table,requirement,data), data);
     }
 
     public int delete(String table) throws SQLException{
-        query = new Query();
-        query.delete(table);
-
-        return query(query.getQuery(), null);
+        return query(createQuerys.delete(table), null);
     }
 
     private int insert(String table, List<Object> data) throws SQLException{
-        query = new Query();
-        query.insert(table)
-                .values(data);
-        return query(query.getQuery(), data);
+
+        return query(createQuerys.insert(table,data), data);
     }
 
-    private int create(String table, List<String[]> fields) throws SQLException{
-        query = new Query();
-        query.create(table)
-                .fields(fields);
-        System.out.println(query.getQuery());
-        return query(query.getQuery(), null);
+    private int create(String table, List<String[]> items) throws SQLException{
+         //System.out.println(query.getQuery());
+        return query(createQuerys.create(table,items), null);
     }
 
     public <T> void insertData(T object) throws Exception
     {
         Class<?> clazz = object.getClass();
-        String tableName = ObjectReflector.getTableName(clazz);
+        //String tableName = ObjectReflector.getTableName(clazz);
         List<String> tableColumns = ObjectReflector.getColumnNames(clazz);
 
         List<Object> data = ObjectReflector.getObjectData(object,new ArrayList<Object>());
@@ -138,7 +132,7 @@ public class Database {
     public <T> void deleteData(T object) throws Exception
     {
         Class<?> clazz = object.getClass();
-        String tableName = ObjectReflector.getTableName(clazz);
+        //String tableName = ObjectReflector.getTableName(clazz);
         //List<String> tableColumns = ObjectReflector.getColumnNames(clazz);
         //List<Object> data = ObjectReflector.getObjectData(object,new ArrayList<Object>());
 
@@ -147,18 +141,21 @@ public class Database {
         //System.out.println(query);
     }
 
-    public <T> void createTable(T object) throws Exception
+    public <T> int createTable(T object) throws Exception
     {
-        Class<?> clazz = object.getClass();
-        String tableName = ObjectReflector.getTableName(clazz);
+        //Class<?> clazz = object.getClass();
+        //String tableName = ObjectReflector.getTableName(clazz);
         //List<String> tableColumns = ObjectReflector.getColumnNames(clazz);
 
         List<String[]> data = ObjectReflector.getFields(object);
 
-        int result = create(tableName,data);
+        return create(tableName,data);
+    }
 
-        //System.out.println(query);
-
+    public <T> String createTableQuery(T object) throws Exception
+    {
+        List<String[]> data = ObjectReflector.getFields(object);
+        return createQuerys.create(tableName,data);
     }
 
 }

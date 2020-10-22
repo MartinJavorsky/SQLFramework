@@ -76,6 +76,34 @@ public class ObjectReflector {
         return object;
     }
 
+    public static Object getFilledData(Map<String,String> columnsMapData, Object object) throws Exception
+    {
+         //T object = clazz.newInstance();
+         for(Field f : object.getClass().getDeclaredFields())
+         {
+            f.setAccessible(true);
+            if(f.isAnnotationPresent(Stlpec.class))
+            {
+                String typElementu = f.getType().getName();
+                String nazovStlpca = f.getAnnotation(Stlpec.class).value().toUpperCase();
+                if(columnsMapData.containsKey(nazovStlpca))
+                {
+                    if (typElementu.equals(String.class.getName())) {
+                        f.set(object, columnsMapData.get(nazovStlpca).replaceAll("\"", ""));
+
+                    } else if (typElementu.equals(Long.class.getName())) {
+                        f.set(object, Long.parseLong(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
+                    } else if (typElementu.equals(Integer.class.getName())) {
+                        f.set(object, Integer.parseInt(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
+                    } else if (typElementu.equals(Float.class.getName())) {
+                        f.set(object, Float.parseFloat(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
+                    }
+                }
+            }
+        }
+        return object;
+    }
+
     public static List<String[]> getFields(Object object) throws Exception
     {   Class<?> clazz = object.getClass();
         //Map<String, Object> data = new HashMap<>();

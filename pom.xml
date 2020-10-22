@@ -6,7 +6,7 @@
 
   <groupId>sk.javorsky</groupId>
   <artifactId>SQLFramework</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>SQLFramework</name>
   <!-- FIXME change it to the project's website -->
@@ -31,7 +31,11 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>8.0.21</version>
     </dependency>
-
+    <dependency>
+      <groupId>sk.javorsky</groupId>
+      <artifactId>CreateQuerys</artifactId>
+      <version>1.0</version>
+    </dependency>
   </dependencies>
 
   <build>

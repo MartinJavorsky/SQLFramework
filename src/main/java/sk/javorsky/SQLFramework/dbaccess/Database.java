@@ -129,9 +129,9 @@ public class Database {
         //System.out.println(query);
 
     }
-    public <T> void deleteData(T object) throws Exception
+    public void deleteAllDataOfTable() throws Exception
     {
-        Class<?> clazz = object.getClass();
+        //Class<?> clazz = object.getClass();
         //String tableName = ObjectReflector.getTableName(clazz);
         //List<String> tableColumns = ObjectReflector.getColumnNames(clazz);
         //List<Object> data = ObjectReflector.getObjectData(object,new ArrayList<Object>());

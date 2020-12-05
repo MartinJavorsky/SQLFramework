@@ -8,7 +8,10 @@ import sk.javorsky.SQLFramework.vynimky.MissingIdException;
 import sk.javorsky.SQLFramework.vynimky.MissingStlpecAnnotationException;
 
 import java.lang.reflect.Field;
+import java.sql.Date;
 import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,19 +87,22 @@ public class ObjectReflector {
             f.setAccessible(true);
             if(f.isAnnotationPresent(Stlpec.class))
             {
-                String typElementu = f.getType().getName();
+                String typElementu = f.getType().getName().toUpperCase();
                 String nazovStlpca = f.getAnnotation(Stlpec.class).value().toUpperCase();
                 if(columnsMapData.containsKey(nazovStlpca))
                 {
-                    if (typElementu.equals(String.class.getName())) {
+                    if (typElementu.contains("STRING")) {
                         f.set(object, columnsMapData.get(nazovStlpca).replaceAll("\"", ""));
-
-                    } else if (typElementu.equals(Long.class.getName())) {
-                        f.set(object, Long.parseLong(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
-                    } else if (typElementu.equals(Integer.class.getName())) {
-                        f.set(object, Integer.parseInt(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
-                    } else if (typElementu.equals(Float.class.getName())) {
-                        f.set(object, Float.parseFloat(columnsMapData.get(nazovStlpca).replaceAll("\"", "")));
+                    } else if (typElementu.contains("LONG")) {
+                        f.set(object, Long.parseLong(columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","").isEmpty() ? "0" : columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","")));
+                    } else if (typElementu.contains("INT")) {
+                        f.set(object, Integer.parseInt(columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","").isEmpty() ? "0" : columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","")));
+                    } else if (typElementu.contains("FLOAT")) {
+                        f.set(object, Float.parseFloat(columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","").isEmpty() ? "0" : columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","")));
+                    } else if (typElementu.contains("DOUBLE")) {
+                        f.set(object, Double.parseDouble(columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","").isEmpty() ? "0" : columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ","")));
+                    }else if (typElementu.contains("DATE")) {
+                        f.set(object, LocalDate.parse(columnsMapData.get(nazovStlpca).replaceAll("\"", "").replaceAll(",",".").replaceAll(" ",""), DateTimeFormatter.ofPattern("dd.MM.yyyy")));
                     }
                 }
             }
@@ -119,7 +125,7 @@ public class ObjectReflector {
                 if(f.isAnnotationPresent(Size.class)) {
                     size = f.getAnnotation(Size.class).value();
                 }
-                String typElementu = f.getType().getName();
+                String typElementu = f.getType().getName().toUpperCase();
                 String nazovStlpca = f.getAnnotation(Stlpec.class).value();
                 fields[0] = nazovStlpca;
                 fields[1] = typElementu;
@@ -141,9 +147,13 @@ public class ObjectReflector {
             f.setAccessible(true);
             if(f.isAnnotationPresent(Stlpec.class))
             {
-                //String typElementu = f.getType().getName();
-                //String nazovStlpca = f.getAnnotation(Stlpec.class).value();
-                data.add(f.get(object));
+                String typElementu = f.getType().getName().toUpperCase();
+                if(typElementu.contains("DATE"))
+                {
+                    if(LocalDate.parse("0001-01-01").equals(((LocalDate) f.get(object))))
+                        data.add("");
+                    else data.add(((LocalDate)f.get(object)).format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+                }else data.add(f.get(object));
 
             }
         }
